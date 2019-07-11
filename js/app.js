@@ -1,7 +1,11 @@
 "use strict";
+import rendering from "./components/rendering.js";
+import addEventListenerOnForm from "./components/formSubmitHendler.js";
 class Notepad {
   constructor(notes = []) {
     this._notes = notes;
+    rendering.renderNoteList(document.querySelector(".note-list"), this._notes);
+    addEventListenerOnForm();
   }
   get notes() {
     return this._notes;
@@ -13,7 +17,24 @@ class Notepad {
       }
     }
   }
+
+  generateUniqueId() {
+    return (
+      Math.random()
+        .toString(36)
+        .substring(2, 15) +
+      Math.random()
+        .toString(36)
+        .substring(2, 15)
+    );
+  }
+
   saveNote(note) {
+    note = {
+      ...note,
+      id: this.generateUniqueI(),
+      priority: this.PRIORITY_TYPES.LOW
+    };
     this._notes.push(note);
     return note;
   }
@@ -44,86 +65,6 @@ class Notepad {
       }
     }
     return arrayNotesCurrentPrioriry;
-  }
-
-  createListItem(notes) {
-    const li = document.createElement("li");
-    li.classList.add("note-list__item");
-    li.dataset.id = notes.id;
-
-    const noteDiv = document.createElement("div");
-    noteDiv.classList.add("note");
-
-    const noteContent = this.createNoteContent(notes.title, notes.body);
-    const noteFooter = this.createNoteFooter(notes.priority);
-
-    noteDiv.append(noteContent, noteFooter);
-    li.appendChild(noteDiv);
-    return li;
-  }
-
-  createNoteContent(title, body) {
-    const noteContentDiv = document.createElement("div");
-    noteContentDiv.classList.add("note__content");
-
-    const noteTitle = document.createElement("h2");
-    noteTitle.classList.add("note__title");
-    noteTitle.textContent = title;
-
-    const noteBody = document.createElement("p");
-    noteBody.classList.add("note__body");
-    noteBody.textContent = body;
-
-    noteContentDiv.append(noteTitle, noteBody);
-
-    return noteContentDiv;
-  }
-
-  createNoteFooter(priority) {
-    const noteFooter = document.createElement('footer');
-    noteFooter.classList.add('note__footer');
-
-    const firstSection = document.createElement('section');
-    const firstButton = this.createButtonAction("decrease-priority", "expand_more");
-    const secondButton = this.createButtonAction("increase-priority", "expand_less");
-
-    const spanFooter = document.createElement('span');
-    spanFooter.classList.add('note__priority');
-    spanFooter.textContent = 'Priority: ';
-    const textNode = document.createTextNode(`${priority}`);
-    spanFooter.appendChild(textNode);
-
-    firstSection.append(firstButton, secondButton, spanFooter);
-
-    const secondSection = document.createElement('section');
-    const thirdButton = this.createButtonAction("edit-note", "edit");
-    const fourthButton = this.createButtonAction("delete-note", "delete");
-
-     secondSection.append(thirdButton, fourthButton);
-    
-    noteFooter.append(firstSection, secondSection);
-    return noteFooter;
-  }
-
-  createButtonAction(dataAction,textContent) {
-    const button = document.createElement('button');
-    button.classList.add('action');
-    button.dataset.action = dataAction;
-
-    const i = document.createElement('i');
-    i.classList.add("material-icons", "action__icon");
-    i.textContent = textContent;
-
-    button.appendChild(i);
-    return button;
-  }
-
-  renderNoteList(listRef, notes) {
-    let elementsList= '';
-    notes.forEach(element => {
-      elementsList+=this.createListItem(element).outerHTML;
-    });
-    listRef.insertAdjacentHTML('afterbegin', elementsList);
   }
 }
 const PRIORITY_TYPES = {
@@ -177,5 +118,4 @@ const initialNotes = [
   }
 ];
 
-const note = new Notepad(initialNotes);
-note.renderNoteList(document.querySelector('.note-list'), note.notes);
+new Notepad(initialNotes);
